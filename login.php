@@ -26,5 +26,28 @@
         }                           
     }
 ?>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Entrar</h1>
+    <div class="login">
+    <form action="" method="post">
+        <label for="">Email</label>
+        <input type="email" name="email" id="">
+        <br>
+        <label for="">Senha</label>
+        <input type="password" name="senha" id="">
+        <br>
+        <button type="submit">Entrar</button>
+    </form>
+    </div>
+</body>
+</html>
 
 
