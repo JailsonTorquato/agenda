@@ -1,5 +1,5 @@
 <?php
-   include('conexao.php');
+   
    if (!isset($_SESSION)){
         session_start();
     }
@@ -7,85 +7,94 @@
         header('Location: login.php');
         die();
     }
-    $id = $_SESSION['usuario'];
-    $sql_clientes = "SELECT *  FROM clientes";
-    $query_clientes = $mysqli->query($sql_clientes) or die($sql_clientes);
-    $num_clientes = $query_clientes->num_rows;
 
+    function limpar_texto($str){
+        return preg_replace("/[^0-9]/","",$str);
+    }
+
+    if (count($_POST)>0){
+       include('conexao.php');
+        $erro = false;
+        $nome       = $_POST['nome'];
+        $email      = $_POST['email'];
+        $telefone   = $_POST['telefone'];
+        $nascimento = $_POST['nascimento'];
+        $senha      = $_POST['senha'];
+        $admin      = $_POST['admin'];
+        if (empty($nome)){
+            $erro="Preencha o seu nome";
+        }
+        if (empty($email)){
+           $erro="Preencha o seu email";  
+        }
+        
+        if (!empty($nascimento)){
+            $pedacos = explode("/",$nascimento);
+            if (count($pedacos)==3){
+                $nascimento = implode("-",array_reverse($pedacos));
+            }else{
+                $erro = "A data está errada. Cadastre no seguinte formato   dd/mm/aaaa";
+            }
+           }
+           if (!empty($telefone)){
+                if (strlen($telefone)>17){
+                $erro="Preencha o telefone de modo correto";  
+                } 
+            }
+            if ($erro){
+                echo "<p><b>Erro: $erro</b></p>";
+            }else{
+                $sql_code="INSERT INTO clientes (nome,email,senha,telefone,nascimento,data,admin)values('$nome','$email','$senha','$telefone','$nascimento',NOW(),'$admin')";
+           
+                $deucerto=$mysqli->query($sql_code) or ($mysqli->error);
+                if ($deucerto){
+                    echo"cadastro efetuado com sucesso!!!";
+                    unset($_POST);
+                }
+            }
+    }
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Clientes</title>
+    <title>Cadastro de Clientes</title>
 </head>
 <body>
-    <h1>Lista de Clientes</h1>
-    <?php if ($_SESSION['admin']) {  ?>
-     <p><a href="cadastrar_clientes.php"></a></p> 
-     <?php }?>
-     <table border="1" cellpading="10">
-        <thead>
-            <th>ID</th>
-            <th>É adm?</th>
-            <th>Nome</th>
-            <th>Foto</th>
-            <th>Email</th>
-            <th>Telefone</th>
-            <th>Data Nascimento</th>
-            <th>Data Cadastro</th>
-            <?php if ($_SESSION['admin']) {  ?>
-                <th>Ações</th>
-            <?php }?>   
-        </thead>
-       <?php  if($num_clientes == 0){ ?>
-        <tr>
-            <td colspan="<?php if ($_SESSION['admin'])
-            echo 9; else echo 8; ?>"> Nenhum Cliente Cadastrado</td>
-        </tr>    
-        <?php 
-        }else{
-          while ($clientes = $query_clientes->fetch_assoc()){
-           
-            $telefone="Não Informado";
-            if (!empty($clientes['telefone'])){
-                $telefone=$clientes['telefone'];
-            }
-        
-            $nascimento="Não Informada";
-            if (!empty($clientes['nascimento'])){
-            $nascimento=formatar_data($clientes['nascimento']); 
-          }  
-          $data_cadastro=date("d/m/Y H:i" ,strtotime($clientes['data']));
-        
-    ?>
-     
-    <tr>
-        <td><?php echo $clientes['id'];?></td>
-        <td><?php if($clientes['admin']) echo"Sim"; else echo "Não";?></td>
-        <td><?php echo $clientes['nome'];?></td>
-        <td><img height="40" src="<?php echo $clientes['foto'];?>" alt=""></td>
-        <td><?php echo $clientes['email'];?></td>
-        <td><?php echo $telefone?></td>
-        <td><?php echo $nascimento?></td>
-        <td><?php echo $data_cadastro?></td>
-        <?php if ($_SESSION['admin']){ ?>
-          <td>
-            <a href="editar.php?id=<?php echo $clientes['id']; ?>">Editar</a>
-            <a href="excluir.php?id=<?php echo $clientes['id']; ?>">Excluir</a>
-          </td>
-        <?php
-        }
-        ?>
-    </tr>
-    <?php
-        }
-    }?>
-    
- </table>
+    <form action="" method="post">
+        <p>
+            <label for="">Nome</label>
+            <input value="<?php if(isset($_POST['nome'])) echo $_POST['nome'];?>"name="nome" type="text">
+        </p>
+        <p>
+            <label for="">Email</label>
+            <input value="<?php if(isset($_POST['email'])) echo $_POST['email'];?>"name="email" type="email">
+        </p>
+        <p>
+            <label for="">Senha</label>
+            <input value="<?php if(isset($_POST['senha'])) echo $_POST['senha'];?>"name="senha" type="password">
+        </p>
+        <p>
+            <label for="">Telefone</label>
+            <input value="<?php if(isset($_POST['telefone'])) echo $_POST['telefone'];?>" placeholder="(xx)xxxxx-xxxx" name="telefone" type="text">
+        </p>
 
-    
-    
+        <p>
+            <label for="">Data de Nascimento</label>
+            <input value="<?php if(isset($_POST['nascimento'])) echo $_POST['nascimento'];?>" placeholder="dd/mm/aaaa" name="nascimento" type="text">
+        </p>
+        
+        <p>
+            <label for="">Tipo</label>
+            <br>
+            <input name="admin" value="1"type="radio">Admin
+            <input name="admin" value="0"type="radio">Cliente
+        </p>
+        <p>
+            <button type="submit">Salvar Cliente</button>
+        </p>
+    </form>  
 </body>
 </html>
